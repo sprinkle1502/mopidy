@@ -1,3 +1,4 @@
+import enum
 import logging
 import random
 
@@ -8,6 +9,12 @@ from mopidy.internal.models import TracklistState
 from mopidy.models import TlTrack, Track
 
 logger = logging.getLogger(__name__)
+
+
+class AddAtPosition(enum.Enum):
+    START = enum.auto()
+    AFTER_CURRENT = enum.auto()
+    END = enum.auto()
 
 
 class TracklistController:
@@ -360,6 +367,15 @@ class TracklistController:
         position in the tracklist. If ``at_position`` is not given, the tracks
         are appended to the end of the tracklist.
 
+        The ``at_position`` can also be one of a few special string values:
+
+        - ``"START"`` - equivalent to passing ``0``
+        - ``"AFTER_CURRENT"`` - added directly after the currently playing track
+        - ``"END"`` - equivalent to passing no position at all
+
+        These are all values of a the enum :class:`mopidy.core.tracklist.AddAtPosition`,
+        which can also be passed in directly.
+
         Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
 
         :param tracks: tracks to add
@@ -381,7 +397,13 @@ class TracklistController:
 
         tracks is None or validation.check_instances(tracks, Track)
         uris is None or validation.check_uris(uris)
-        validation.check_integer(at_position or 0)
+
+        if at_position is not None and not isinstance(at_position, int):
+            at_position = validation.check_enum(
+                at_position,
+                AddAtPosition,
+                msg="Expected an integer, or a member of {enum_name}: {enum_members}",
+            )
 
         if tracks:
             deprecation.warn("core.tracklist.add:tracks_arg")
@@ -394,6 +416,15 @@ class TracklistController:
 
         tl_tracks = []
         max_length = self.core._config["core"]["max_tracklist_length"]
+
+        if at_position == AddAtPosition.START:
+            at_position = 0
+        elif at_position == AddAtPosition.AFTER_CURRENT:
+            at_position = self.index()
+            if at_position is not None:
+                at_position += 1
+        elif at_position == AddAtPosition.END:
+            at_position = None
 
         for track in tracks:
             if self.get_length() >= max_length:

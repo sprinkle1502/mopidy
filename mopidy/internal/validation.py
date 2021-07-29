@@ -1,7 +1,11 @@
 import urllib
 from collections.abc import Iterable, Mapping
+from enum import Enum
+from typing import Any, Type, TypeVar
 
 from mopidy import exceptions
+
+ENUM = TypeVar("ENUM", bound=Enum)
 
 PLAYBACK_STATES = {"paused", "stopped", "playing"}
 
@@ -87,6 +91,27 @@ def check_integer(arg, min=None, max=None):
         raise exceptions.ValidationError(
             f"Expected number smaller or equal to {max}, not {arg!r}"
         )
+
+
+def check_enum(
+    arg: Any,
+    enum: Type[ENUM],
+    msg="Expected a member of {enum_name}: {enum_members}",
+) -> ENUM:
+    members = enum.__members__
+
+    if isinstance(arg, str):
+        if arg in members:
+            return members[arg]
+    elif isinstance(arg, enum):
+        return arg
+
+    member_names = members.keys()
+    raise exceptions.ValidationError(
+        msg.format(
+            enum_name=enum.__name__, enum_members=", ".join(member_names)
+        )
+    )
 
 
 def check_query(arg, fields=None, list_values=True):

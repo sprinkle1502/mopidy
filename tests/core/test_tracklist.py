@@ -1,7 +1,10 @@
+import re
 import unittest
 from unittest import mock
 
-from mopidy import backend, core
+import pytest
+
+from mopidy import backend, core, exceptions
 from mopidy.internal.models import TracklistState
 from mopidy.models import TlTrack, Track
 
@@ -295,3 +298,104 @@ class TracklistSaveLoadStateTest(unittest.TestCase):
 
     def test_load_none(self):
         self.core.tracklist._load_state(None, None)
+
+
+class TracklistAddTest(unittest.TestCase):
+    def setUp(self):
+        config = {"core": {"max_tracklist_length": 10000}}
+
+        tracks = [
+            Track(uri="dummy1:a", name="foo"),
+            Track(uri="dummy1:b", name="foo"),
+            Track(uri="dummy1:c", name="bar"),
+        ]
+
+        def lookup(uris):
+            return {u: [t for t in tracks if t.uri == u] for u in uris}
+
+        self.core = core.Core(config, mixer=None, backends=[])
+        self.core.library = mock.Mock(spec=core.LibraryController)
+        self.core.library.lookup.side_effect = lookup
+
+        self.core.playback = mock.Mock(spec=core.PlaybackController)
+
+        self.tl_tracks = self.core.tracklist.add(uris=[t.uri for t in tracks])
+
+    def test_add_appends_by_default(self):
+        tl_track = self.core.tracklist.add(uris=["dummy1:a"])[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[3].tlid == tl_track.tlid
+
+    def test_add_inserts_at_supplied_position(self):
+        tl_track = self.core.tracklist.add(at_position=1, uris=["dummy1:b"])[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[1].tlid == tl_track.tlid
+
+    def test_add_inserts_at_negative_supplied_position(self):
+        tl_track = self.core.tracklist.add(at_position=-1, uris=["dummy1:c"])[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[2].tlid == tl_track.tlid
+
+    def test_add_inserts_at_start(self):
+        tl_track = self.core.tracklist.add(
+            at_position=core.tracklist.AddAtPosition.START,
+            uris=["dummy1:c"],
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[0].tlid == tl_track.tlid
+
+    def test_add_inserts_at_start_using_string(self):
+        tl_track = self.core.tracklist.add(
+            at_position="START", uris=["dummy1:c"]
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[0].tlid == tl_track.tlid
+
+    def test_add_inserts_after_currently_playing_track(self):
+        self.core.playback.get_current_tl_track.return_value = self.tl_tracks[0]
+        tl_track = self.core.tracklist.add(
+            at_position=core.tracklist.AddAtPosition.AFTER_CURRENT,
+            uris=["dummy1:c"],
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[1].tlid == tl_track.tlid
+
+    def test_add_inserts_after_currently_playing_track_using_string(self):
+        self.core.playback.get_current_tl_track.return_value = self.tl_tracks[0]
+        tl_track = self.core.tracklist.add(
+            at_position="AFTER_CURRENT", uris=["dummy1:c"]
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[1].tlid == tl_track.tlid
+
+    def test_add_inserts_at_end(self):
+        tl_track = self.core.tracklist.add(
+            at_position=core.tracklist.AddAtPosition.END,
+            uris=["dummy1:a"],
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[3].tlid == tl_track.tlid
+
+    def test_add_inserts_at_end_using_string(self):
+        tl_track = self.core.tracklist.add(
+            at_position="END", uris=["dummy1:a"]
+        )[0]
+        all_tracks = self.core.tracklist.get_tl_tracks()
+        assert all_tracks[3].tlid == tl_track.tlid
+
+    def test_add_rejects_invalid_position_values(self):
+        err_msg = re.escape(
+            "Expected an integer, or a member of AddAtPosition: "
+            "START, AFTER_CURRENT, END"
+        )
+
+        with pytest.raises(exceptions.ValidationError, match=err_msg):
+            self.core.tracklist.add(
+                at_position="after_current", uris=["dummy1:a"]
+            )
+
+        with pytest.raises(exceptions.ValidationError, match=err_msg):
+            self.core.tracklist.add(at_position=object(), uris=["dummy1:b"])
+
+        with pytest.raises(exceptions.ValidationError, match=err_msg):
+            self.core.tracklist.add(at_position=self, uris=["dummy1:c"])
