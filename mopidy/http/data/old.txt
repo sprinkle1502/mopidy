@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="10">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sprinkle's jukebox</title>
+    <link rel="stylesheet" type="text/css" href="mopidy.css">
+  </head>
+  <body>
+
+
+    </br></br></br></br></br></br></br></br></br>
+    <a href="http://raspberrypi.local:6680/iris" style = "position:absolute; left:450px; top:40px;">
+<img alt="Qries" src="saia.png"
+             width="300" height="300">
+               <p style = "position:absolute; left:100px; top:240px; font-size: 50px; color: white;"> Saia </p>
+
+               <a href="http://raspberrypi.local:6680/mopidy/" style = "position:absolute; left:670px; top:60px;">
+           <img alt="Qries" src="Sprinkle.png"
+                        width="600" height="600">
+
+
+ <a href="http://raspberrypi.local:6680/party/" style = "position:absolute; Right:90px; top:92px;">
+                      <img alt="Qries" src="student.jpg"
+                      width="250" height="250">
+                      <p style = "position:absolute; Right:45px; top:220px; font-size: 50px; color: white;"> Student </p>
+  </body>
+</html>
