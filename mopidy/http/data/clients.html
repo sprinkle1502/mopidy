@@ -1,45 +1,44 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="refresh" content="10">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sprinkle's jukebox</title>
-    <style>
-    .image-container img{
-      width:200px;
+<head>
+  <meta http-equiv="refresh" content="10">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sprinkle's jukebox</title>
+  <style>
+    .image-container img {
+      width: 200px;
     }
-    #main-content{
-      margin-left:50px;
+    #main-content {
+      margin-left: 50px;
     }
-    </style>
-<link rel="shortcut icon" href="Sprinkle.png">
+  </style>
+  <link rel="shortcut icon" href="Sprinkle.png">
+</head>
+<body style="background-image: url('bg.jpg'); background-repeat: no-repeat; background-size: cover;">
 
-  </head>
-  <body style="background-image: url('bg.jpg'); background-repeat: no-repeat; background-size: cover;">
-
-    <div id="header">
+  <div id="header">
+  </div>
+  <div id="main-content" style="display: flex; align-items: center; justify-content: center;">
+    <div class="image-container" style="margin-left: 90px;">
+      <a href="http://jukebox.local:6680/iris">
+        <img alt="Qries" src="saia.png" style="width: 220px;">
+      </a>
+      <p style="position: relative; text-align: center; font-size: 50px; color: white; margin-top: -20px;"> Admin </p>
     </div>
-    <div id="main-content" style="display: flex; align-items: center; justify-content: center;">
-      <div class="image-container" style="margin-left: 90px;">
-        <a href="http://raspberrypi.local:6680/iris">
-          <img alt="Qries" src="saia.png" style="width: 220px;">
-        </a>
-        <p style = "position: relative; text-align: center; font-size: 50px; color: white; margin-top: -20px;"> Admin </p>
-      </div>
-      <div class="image-container">
-        <a href="http://raspberrypi.local:6680/mopidy/">
-          <img alt="Qries" src="Sprinkle.png" style="max-width:500px; max-height:500px; width:auto; height:auto">
-        </a>
-      </div>
-      <div class="image-container">
-        <a href="http://raspberrypi.local:6680/party/">
-          <img style="margin-top: 40px;" alt="Qries" src="student.jpg" >
-        </a>
-        <p style = "position: relative; text-align: center; font-size: 50px; color: white; margin-top: -2px;"> Student </p>
-      </div>
+    <div class="image-container">
+      <a href="http://jukebox.local:6680/mopidy/">
+        <img alt="Qries" src="Sprinkle.png" style="max-width: 500px; max-height: 500px; width: auto; height: auto">
+      </a>
     </div>
-    <div id="footer">
+    <div class="image-container">
+      <a href="http://jukebox.local:6680/party/">
+        <img style="margin-top: 40px;" alt="Qries" src="student.jpg">
+      </a>
+      <p style="position: relative; text-align: center; font-size: 50px; color: white; margin-top: -2px;"> Student </p>
     </div>
-  </body>
+  </div>
+  <div id="footer">
+  </div>
+</body>
 </html>
